@@ -19,8 +19,9 @@ SILO 对象存储的 Web 管理控制台，由 Pigsty 社区维护。前端使�
 发布状态与制品见 [GitHub Releases](https://github.com/pgsty/silo-console/releases)，
 详细变化见 [CHANGELOG.md](CHANGELOG.md#release-v251)。
 
-更新独立 Console 不会替换 SILO 内嵌的 Console；后者需要新的 Server 构建。
-策略“恢复默认”仍需要 Server 的 IAM 缓存修复，已公开的 Server 20261018 不包含它。
+SILO Server 20261026 内嵌 Console v2.5.1，并包含策略“恢复默认”所需的 IAM 缓存修复。
+更新独立 Console 不会替换旧 Server 的内嵌 Console；升级 Server 才能同时采用这两项变更。
+详见[联合发布说明](https://silo.pgsty.com/zh/blog/release/silo-20261026/)。
 
 ## 功能与兼容范围
 

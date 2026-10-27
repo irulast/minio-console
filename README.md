@@ -51,9 +51,10 @@ scrolling. Existing policy semantics and output compatibility selections remain.
 See [GitHub Releases](https://github.com/pgsty/silo-console/releases) for publication
 status and artifacts, and [CHANGELOG.md](CHANGELOG.md#release-v251) for details.
 
-Updating standalone Console does not replace the Console embedded in SILO; that
-requires a new Server build. Policy **Reset to default** still requires the
-Server IAM cache repair, which the published Server 20261018 does not contain.
+SILO Server 20261026 embeds Console v2.5.1 and includes the IAM cache repair
+required by policy **Reset to default**. Updating standalone Console does not
+replace an older Server's embedded Console; upgrade Server to adopt both changes.
+See the [coordinated release notes](https://silo.pgsty.com/blog/release/silo-20261026/).
 
 ## Overview
 
