@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { getBytes } from "../../../../../common/utils";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AppState } from "../../../../../store";
 import { api } from "../../../../../api";
@@ -25,6 +24,7 @@ import {
 } from "../../../../../api/consoleApi";
 
 import { hasCreateBucketPermission } from "../../../../../common/SecureComponent/createBucketPermission";
+import { getQuotaBytes, isValidQuota } from "./addBucketValidation";
 
 export const addBucketAsync = createAsyncThunk(
   "buckets/addBucketAsync",
@@ -73,11 +73,17 @@ export const addBucketAsync = createAsyncThunk(
 
     if (distributedSetup) {
       if (quotaEnabled) {
-        const amount = getBytes(quotaSize, quotaUnit, true);
+        if (!isValidQuota(quotaSize, quotaUnit)) {
+          return rejectWithValue({
+            message: "Invalid bucket quota.",
+            detailedMessage:
+              "The bucket quota must be a positive supported value.",
+          });
+        }
         request.quota = {
           enabled: true,
           quota_type: "hard",
-          amount: parseInt(amount),
+          amount: getQuotaBytes(quotaSize, quotaUnit),
         };
       }
 

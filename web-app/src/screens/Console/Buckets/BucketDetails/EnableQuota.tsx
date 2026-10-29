@@ -38,6 +38,10 @@ import { useAppDispatch } from "../../../../store";
 import { BucketQuota } from "api/consoleApi";
 import { api } from "api";
 import { errorToHandler } from "api/errors";
+import {
+  getQuotaBytes,
+  isValidQuota,
+} from "../ListBuckets/AddBucket/addBucketValidation";
 
 const quotaUnits = [
   { label: "B", value: "B" },
@@ -76,13 +80,8 @@ const EnableQuota = ({
   const [quotaEnabled, setQuotaEnabled] = useState<boolean>(false);
   const [quotaSize, setQuotaSize] = useState<string>("1");
   const [quotaUnit, setQuotaUnit] = useState<string>("Ti");
-  const quotaAmount = Math.trunc(Number(getBytes(quotaSize, quotaUnit, true)));
-  const validInput =
-    !quotaEnabled ||
-    (/^\d*(?:\.\d{1,2})?$/.test(quotaSize) &&
-      Number.isFinite(quotaAmount) &&
-      quotaAmount > 0 &&
-      quotaAmount < 2 ** 63);
+  const quotaAmount = getQuotaBytes(quotaSize, quotaUnit);
+  const validInput = !quotaEnabled || isValidQuota(quotaSize, quotaUnit);
 
   useEffect(() => {
     if (enabled) {
