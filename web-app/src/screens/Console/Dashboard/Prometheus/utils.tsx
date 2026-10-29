@@ -17,6 +17,7 @@
 import React, { Fragment } from "react";
 import get from "lodash/get";
 import { IDashboardPanel, widgetType } from "./types";
+import { formatAxisTick } from "./Widgets/formatAxisTick";
 import {
   getTimeFromTimestamp,
   niceBytes,
@@ -362,7 +363,7 @@ export const panelsConfiguration: IDashboardPanel[] = [
       },
     ],
     type: widgetType.linearGraph,
-    yAxisFormatter: roundNumber,
+    yAxisFormatter: formatAxisTick,
     xAxisFormatter: getTimeFromTimestamp,
   },
   {
