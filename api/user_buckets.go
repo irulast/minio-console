@@ -869,6 +869,9 @@ func setBucketRetentionConfig(ctx context.Context, client MinioClient, bucketNam
 	if validity == nil {
 		return errors.New("retention validity can't be nil")
 	}
+	if *validity <= 0 {
+		return ErrBadRequest
+	}
 
 	var retentionMode minio.RetentionMode
 	switch mode {

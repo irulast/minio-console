@@ -13,6 +13,7 @@ import { ThemeHandler } from "mds";
 import { lightTheme } from "../../packages/mds/src/global/themes";
 import { store } from "../../src/store";
 import EnableQuota from "../../src/screens/Console/Buckets/BucketDetails/EnableQuota";
+import SetRetentionConfig from "../../src/screens/Console/Buckets/BucketDetails/SetRetentionConfig";
 
 const query = new URLSearchParams(location.search);
 
@@ -21,13 +22,21 @@ function BucketConfigHarness() {
   const quota = query.get("quota");
   return (
     <>
-      <EnableQuota
-        open={open}
-        selectedBucket="test-bucket"
-        enabled={quota !== null}
-        cfg={quota === null ? null : { quota: Number(quota), type: "hard" }}
-        closeModalAndRefresh={() => setOpen(false)}
-      />
+      {query.has("retention") ? (
+        <SetRetentionConfig
+          open={open}
+          bucketName="test-bucket"
+          closeModalAndRefresh={() => setOpen(false)}
+        />
+      ) : (
+        <EnableQuota
+          open={open}
+          selectedBucket="test-bucket"
+          enabled={quota !== null}
+          cfg={quota === null ? null : { quota: Number(quota), type: "hard" }}
+          closeModalAndRefresh={() => setOpen(false)}
+        />
+      )}
       <output data-testid="closed">{String(!open)}</output>
     </>
   );

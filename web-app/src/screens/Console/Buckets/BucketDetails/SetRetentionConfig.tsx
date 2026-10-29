@@ -56,14 +56,15 @@ const SetRetentionConfig = ({
   const [retentionUnit, setRetentionUnit] = useState<
     ObjectRetentionUnit | undefined
   >(ObjectRetentionUnit.Days);
-  const [retentionValidity, setRetentionValidity] = useState<
-    number | undefined
-  >(1);
-  const [valid, setValid] = useState<boolean>(false);
+  const [retentionValidity, setRetentionValidity] = useState<number>(1);
+  const valid =
+    Number.isInteger(retentionValidity) &&
+    retentionValidity >= 1 &&
+    retentionValidity <= 2147483647;
 
   const setRetention = (event: React.FormEvent) => {
     event.preventDefault();
-    if (addLoading) {
+    if (addLoading || !valid) {
       return;
     }
     setAddLoading(true);
@@ -71,7 +72,7 @@ const SetRetentionConfig = ({
       .setBucketRetentionConfig(bucketName, {
         mode: retentionMode || ObjectRetentionMode.Compliance,
         unit: retentionUnit || ObjectRetentionUnit.Days,
-        validity: retentionValidity || 1,
+        validity: retentionValidity,
       })
       .then(() => {
         setAddLoading(false);
@@ -84,14 +85,6 @@ const SetRetentionConfig = ({
   };
 
   useEffect(() => {
-    if (Number.isNaN(retentionValidity) || (retentionValidity || 1) < 1) {
-      setValid(false);
-      return;
-    }
-    setValid(true);
-  }, [retentionValidity]);
-
-  useEffect(() => {
     if (loadingForm) {
       api.buckets
         .getBucketRetentionConfig(bucketName)
@@ -100,7 +93,7 @@ const SetRetentionConfig = ({
 
           // We set default values
           setRetentionMode(res.data.mode);
-          setRetentionValidity(res.data.validity);
+          setRetentionValidity(res.data.validity ?? 1);
           setRetentionUnit(res.data.unit);
         })
         .catch(() => {
