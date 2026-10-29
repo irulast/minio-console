@@ -71,6 +71,9 @@ func setBucketQuota(ctx context.Context, ac *AdminClient, bucket *string, bucket
 		return errors.New("nil bucket quota was provided")
 	}
 	if *bucketQuota.Enabled {
+		if bucketQuota.Amount < 0 {
+			return ErrBadRequest
+		}
 		var quotaType madmin.QuotaType
 		switch bucketQuota.QuotaType {
 		case models.SetBucketQuotaQuotaTypeHard:

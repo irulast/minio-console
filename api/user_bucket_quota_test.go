@@ -12,6 +12,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,8 +22,62 @@ import (
 	"github.com/minio/console/api/operations"
 	bucketAPI "github.com/minio/console/api/operations/bucket"
 	"github.com/minio/console/models"
+	"github.com/minio/madmin-go/v3"
 	"github.com/stretchr/testify/require"
 )
+
+func TestSetBucketQuotaAmountBounds(t *testing.T) {
+	for _, enabled := range []bool{false, true} {
+		for _, amount := range []int64{-1, 0, 1, 1342177280, math.MaxInt64} {
+			t.Run(fmt.Sprintf("enabled=%v/amount=%d", enabled, amount), func(t *testing.T) {
+				var bodies [][]byte
+				backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if r.Method != http.MethodPut || r.URL.Path != "/minio/admin/v3/set-bucket-quota" ||
+						r.URL.Query().Get("bucket") != "quota-bucket" {
+						t.Errorf("unexpected admin request: %s %s", r.Method, r.URL)
+						w.WriteHeader(http.StatusBadRequest)
+						return
+					}
+					body, err := io.ReadAll(r.Body)
+					if err != nil {
+						t.Errorf("reading quota body: %v", err)
+					}
+					bodies = append(bodies, body)
+					w.WriteHeader(http.StatusOK)
+				}))
+				t.Cleanup(backend.Close)
+				t.Setenv(ConsoleMinIOServer, backend.URL)
+				api := &operations.ConsoleAPI{}
+				registerBucketQuotaHandlers(api)
+				params := bucketAPI.SetBucketQuotaParams{
+					HTTPRequest: httptest.NewRequest(http.MethodPut, "/api/v1/buckets/quota-bucket/quota", nil),
+					Name:        "quota-bucket",
+					Body: &models.SetBucketQuota{
+						Enabled: &enabled, Amount: amount, QuotaType: "hard",
+					},
+				}
+				session := &models.Principal{STSAccessKeyID: "test-access", STSSecretAccessKey: "test-secret"}
+				response := api.BucketSetBucketQuotaHandler.Handle(params, session)
+				rec := httptest.NewRecorder()
+				response.WriteResponse(rec, runtime.JSONProducer())
+				if enabled && amount < 0 {
+					require.Equal(t, http.StatusBadRequest, rec.Code, rec.Body.String())
+					require.Empty(t, bodies, "negative quota must not reach the server")
+					return
+				}
+				require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+				require.Len(t, bodies, 1)
+				var wire madmin.BucketQuota
+				require.NoError(t, json.Unmarshal(bodies[0], &wire))
+				want := madmin.BucketQuota{}
+				if enabled {
+					want = madmin.BucketQuota{Size: uint64(amount), Type: madmin.HardQuota}
+				}
+				require.Equal(t, want, wire, "valid and clear requests must retain their wire semantics")
+			})
+		}
+	}
+}
 
 func TestBucketQuotaResponses(t *testing.T) {
 	for _, tc := range []struct {
