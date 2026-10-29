@@ -199,7 +199,7 @@ export const panelsConfiguration: IDashboardPanel[] = [
   },
   {
     id: 60,
-    title: i18nKey("API Request Rate"),
+    title: i18nKey("API Requests (last 4 minutes)"),
     data: [],
     widgetConfiguration: [
       {
@@ -284,7 +284,7 @@ export const panelsConfiguration: IDashboardPanel[] = [
   },
   {
     id: 71,
-    title: i18nKey("API Request Error Rate"),
+    title: i18nKey("API Request Errors (last 4 minutes)"),
     data: [],
     widgetConfiguration: [
       {
