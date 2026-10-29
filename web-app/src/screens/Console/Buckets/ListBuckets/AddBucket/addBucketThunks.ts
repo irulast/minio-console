@@ -24,7 +24,11 @@ import {
 } from "../../../../../api/consoleApi";
 
 import { hasCreateBucketPermission } from "../../../../../common/SecureComponent/createBucketPermission";
-import { getQuotaBytes, isValidQuota } from "./addBucketValidation";
+import {
+  getQuotaBytes,
+  isValidQuota,
+  isValidRetentionValidity,
+} from "./addBucketValidation";
 
 export const addBucketAsync = createAsyncThunk(
   "buckets/addBucketAsync",
@@ -88,6 +92,13 @@ export const addBucketAsync = createAsyncThunk(
       }
 
       if (retentionEnabled) {
+        if (!isValidRetentionValidity(retentionValidity)) {
+          return rejectWithValue({
+            message: "Invalid retention validity.",
+            detailedMessage:
+              "The retention validity must be a positive 32-bit integer.",
+          });
+        }
         request.retention = {
           mode: retentionMode as ObjectRetentionMode,
           unit: retentionUnit as ObjectRetentionUnit,

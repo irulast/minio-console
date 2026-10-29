@@ -163,3 +163,76 @@ test("changing the quota unit revalidates the current scalar", async () => {
     await page.close();
   }
 });
+
+for (const value of [1.5, 2147483648]) {
+  test(`create retention rejects ${value}`, async () => {
+    const { page, requests } = await mount();
+    try {
+      const result = await page.evaluate(async (retentionValidity) => {
+        const harness = (window as any).addBucketNumericHarness;
+        const { setName, setVersioning, setRetention, setRetentionValidity } =
+          harness.addBucketActions;
+        harness.store.dispatch(setName("test-bucket"));
+        harness.store.dispatch(setVersioning(true));
+        harness.store.dispatch(setRetention(true));
+        harness.store.dispatch(setRetentionValidity(retentionValidity));
+        const action = await harness.store.dispatch(harness.addBucketAsync());
+        return {
+          action: action.type,
+          invalidFields: harness.store.getState().addBucket.invalidFields,
+        };
+      }, value);
+
+      expect(result.action).toBe("buckets/addBucketAsync/rejected");
+      expect(result.invalidFields).toEqual(["retentionValidity"]);
+      expect(requests).toEqual([]);
+    } finally {
+      await page.close();
+    }
+  });
+}
+
+test("create retention keeps the int32 upper boundary", async () => {
+  const { page, requests } = await mount();
+  try {
+    const result = await page.evaluate(async () => {
+      const harness = (window as any).addBucketNumericHarness;
+      const { setName, setVersioning, setRetention, setRetentionValidity } =
+        harness.addBucketActions;
+      harness.store.dispatch(setName("test-bucket"));
+      harness.store.dispatch(setVersioning(true));
+      harness.store.dispatch(setRetention(true));
+      harness.store.dispatch(setRetentionValidity(2147483647));
+      const action = await harness.store.dispatch(harness.addBucketAsync());
+      return {
+        action: action.type,
+        invalidFields: harness.store.getState().addBucket.invalidFields,
+      };
+    });
+
+    expect(result.action).toBe("buckets/addBucketAsync/fulfilled");
+    expect(result.invalidFields).toEqual([]);
+    expect(requests).toEqual([
+      {
+        method: "POST",
+        path: "/api/v1/buckets",
+        body: {
+          name: "test-bucket",
+          retention: {
+            mode: "compliance",
+            unit: "days",
+            validity: 2147483647,
+          },
+          versioning: {
+            enabled: true,
+            excludeFolders: false,
+            excludePrefixes: [],
+          },
+          locking: true,
+        },
+      },
+    ]);
+  } finally {
+    await page.close();
+  }
+});

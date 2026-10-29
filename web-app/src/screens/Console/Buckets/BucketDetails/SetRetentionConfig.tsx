@@ -27,6 +27,7 @@ import {
 import { api } from "api";
 import { ObjectRetentionMode, ObjectRetentionUnit } from "api/consoleApi";
 import { errorToHandler } from "api/errors";
+import { isValidRetentionValidity } from "../ListBuckets/AddBucket/addBucketValidation";
 
 import { modalStyleUtils } from "../../Common/FormComponents/common/styleLibrary";
 import { setModalErrorSnackMessage } from "../../../../systemSlice";
@@ -57,10 +58,7 @@ const SetRetentionConfig = ({
     ObjectRetentionUnit | undefined
   >(ObjectRetentionUnit.Days);
   const [retentionValidity, setRetentionValidity] = useState<number>(1);
-  const valid =
-    Number.isInteger(retentionValidity) &&
-    retentionValidity >= 1 &&
-    retentionValidity <= 2147483647;
+  const valid = isValidRetentionValidity(retentionValidity);
 
   const setRetention = (event: React.FormEvent) => {
     event.preventDefault();

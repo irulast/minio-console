@@ -14,3 +14,6 @@ export const isValidQuota = (size: string, unit: string): boolean => {
   const amount = getQuotaBytes(size, unit);
   return Number.isFinite(amount) && amount > 0 && amount < maxQuotaBytes;
 };
+
+export const isValidRetentionValidity = (value: number): boolean =>
+  Number.isInteger(value) && value >= 1 && value <= 2147483647;

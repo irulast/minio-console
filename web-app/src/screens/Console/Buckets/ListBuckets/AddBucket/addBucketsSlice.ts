@@ -17,7 +17,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addBucketAsync } from "./addBucketThunks";
 import { ApiError, ObjectRetentionMode } from "api/consoleApi";
-import { isValidQuota } from "./addBucketValidation";
+import { isValidQuota, isValidRetentionValidity } from "./addBucketValidation";
 
 interface AddBucketState {
   loading: boolean;
@@ -170,16 +170,12 @@ const addBucketsSlice = createSlice({
         state.lockingFieldDisabled = false;
       }
 
-      if (
-        state.retentionEnabled &&
-        (Number.isNaN(state.retentionValidity) || state.retentionValidity < 1)
-      ) {
-        state.invalidFields = [...state.invalidFields, "retentionValidity"];
-      } else {
-        state.invalidFields = state.invalidFields.filter(
-          (field) => field !== "retentionValidity",
-        );
-      }
+      updateInvalidField(
+        state,
+        "retentionValidity",
+        !state.retentionEnabled ||
+          isValidRetentionValidity(state.retentionValidity),
+      );
     },
     setRetentionMode: (state, action: PayloadAction<ObjectRetentionMode>) => {
       state.retentionMode = action.payload;
@@ -189,16 +185,12 @@ const addBucketsSlice = createSlice({
     },
     setRetentionValidity: (state, action: PayloadAction<number>) => {
       state.retentionValidity = action.payload;
-      if (
-        state.retentionEnabled &&
-        (Number.isNaN(state.retentionValidity) || state.retentionValidity < 1)
-      ) {
-        state.invalidFields = [...state.invalidFields, "retentionValidity"];
-      } else {
-        state.invalidFields = state.invalidFields.filter(
-          (field) => field !== "retentionValidity",
-        );
-      }
+      updateInvalidField(
+        state,
+        "retentionValidity",
+        !state.retentionEnabled ||
+          isValidRetentionValidity(state.retentionValidity),
+      );
     },
 
     resetForm: (state) => {
