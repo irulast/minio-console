@@ -408,7 +408,7 @@ func getAccountBuckets(ctx context.Context, client MinioAdmin) ([]*models.Bucket
 			bucketElem.Details.VersioningSuspended = bucket.Details.VersioningSuspended
 			if bucket.Details.Quota != nil {
 				bucketElem.Details.Quota = &models.BucketDetailsQuota{
-					Quota: int64(bucket.Details.Quota.Quota),
+					Quota: int64(bucketQuotaSize(*bucket.Details.Quota)),
 					Type:  string(bucket.Details.Quota.Type),
 				}
 			}

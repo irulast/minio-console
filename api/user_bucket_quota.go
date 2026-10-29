@@ -115,14 +115,15 @@ func getBucketQuota(ctx context.Context, ac *AdminClient, bucket *string) (*mode
 	if err != nil {
 		return nil, err
 	}
-	var quotaSize uint64
-	if quota.Size > 0 {
-		quotaSize = quota.Size
-	} else {
-		quotaSize = quota.Quota
-	}
 	return &models.BucketQuota{
-		Quota: int64(quotaSize),
+		Quota: int64(bucketQuotaSize(quota)),
 		Type:  string(quota.Type),
 	}, nil
+}
+
+func bucketQuotaSize(quota madmin.BucketQuota) uint64 {
+	if quota.Size > 0 {
+		return quota.Size
+	}
+	return quota.Quota
 }
