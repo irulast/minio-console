@@ -1,3 +1,17 @@
+# irulast MinIO Console security maintenance
+
+This public compatibility fork preserves the embedded MinIO Console API and UI
+at upstream commit `2017f33b26e1`. It is selected by an immutable Go replacement
+in `irulast/minio`. It is not an independently deployed Console product.
+
+The anonymous sharing proxy is restricted to object GETs at the configured S3
+origin and does not follow redirects. Backport provenance: PGSTY Console PR 56,
+commit `56dfe455ac2f58fd19dc3cc9751248c382380d77` (Feng Ruohang). The original
+MinIO HTTP client constructor is retained. Original notices and AGPL license are
+retained. CI and the server's recovery rehearsal must pass before promotion.
+
+---
+
 # MinIO Console
 
 ![build](https://github.com/minio/object-browser/actions/workflows/jobs.yaml/badge.svg) ![license](https://img.shields.io/badge/license-AGPL%20V3-blue)
